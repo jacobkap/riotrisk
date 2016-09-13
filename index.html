@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Riot Risk Assessment</title>
+    </head>
+    <body>
+        <div style="height: 50px; color: white; font-size: 20px; background-color: darkslategray">
+            <h1>Riot Risk Assessment</h1>
+            <!-- TODO: Add a purdy button to the very right of the menu that'll have links to things like About and Complaints (Going to a link of a box of tissues)
+                ** There's a symbol that has three lines (I forgot the name, but it's used in symbolic logic) that we can use instead of an actual picture
+                ** I guess it's also called a navicon?
+            -->
+        </div>
+        <script>
+            var keys = {
+                police_diversity_zscore: {
+                    name: 'Police Diversity',
+                    description: "Uses Simpson's Diversity Index to determine diversity of police"
+                },
+                percent_under_first_quartile_zscore: {
+                    name: 'Poverty',
+                    description: 'The percent of residents within the first quartile of state income'
+                },
+                minority_isolation_zscore: {
+                    name: 'Minority Isolation',
+                    description: 'Combined Black and Hispanic Isolation index based on the University of Michigan Isolation Index of Segregation'
+                },
+                youth_jobless_zscore: {
+                    name: 'Jobless Youth',
+                    description: 'Black and Hispanic youth (aged 16-30) who are unemployed and not in school'
+                },
+                minority_percent_zscore: {
+                    name: 'City Percent Minority',
+                    description: 'The percent of minorities in the city'
+                },
+                shootings_zscore: {
+                    name: 'Police Shootings',
+                    description: 'Standardized number of police shooting deaths divided by the number of officers in the department'
+                }
+            };
+
+            var census =
+                    [
+                        { City: 'Chesapeake',
+                            State: 'Virginia',
+                            police_diversity_zscore: -0.5689,
+                            percent_under_first_quartile_zscore: 0.1532,
+                            minority_isolation_zscore: -0.5536,
+                            youth_jobless_zscore: 0.0549,
+                            minority_percent_zscore: -0.4915,
+                            shootings_zscore: 0.258 },
+                        { City: 'Chicago',
+                            State: 'Illinois',
+                            police_diversity_zscore: 1.021,
+                            percent_under_first_quartile_zscore: 0.364,
+                            minority_isolation_zscore: -1.0744,
+                            youth_jobless_zscore: 0.6509,
+                            minority_percent_zscore: 0.461,
+                            shootings_zscore: 0.6937 },
+                        { City: 'Cleveland',
+                            State: 'Ohio',
+                            police_diversity_zscore: 0.1989,
+                            percent_under_first_quartile_zscore: 0.7312,
+                            minority_isolation_zscore: 0.001,
+                            youth_jobless_zscore: 1.5758,
+                            minority_percent_zscore: 0.5801,
+                            shootings_zscore: -0.4221 },
+                        { City: 'Denver',
+                            State: 'Colorado',
+                            police_diversity_zscore: 0.0658,
+                            percent_under_first_quartile_zscore: -0.3937,
+                            minority_isolation_zscore: -0.8806,
+                            youth_jobless_zscore: -1.3782,
+                            minority_percent_zscore: -0.4233,
+                            shootings_zscore: 0.4541 },
+                        { City: 'Des Moines',
+                            State: 'Iowa',
+                            police_diversity_zscore: -1.0904,
+                            percent_under_first_quartile_zscore: -0.4266,
+                            minority_isolation_zscore: -0.3936,
+                            youth_jobless_zscore: -0.9918,
+                            minority_percent_zscore: -1.0648,
+                            shootings_zscore: 0.2698 },
+                        { City: 'Detroit',
+                            State: 'Michigan',
+                            police_diversity_zscore: 1.2486,
+                            percent_under_first_quartile_zscore: 1.4176,
+                            minority_isolation_zscore: -0.3962,
+                            youth_jobless_zscore: 1.2676,
+                            minority_percent_zscore: 1.5834,
+                            shootings_zscore: -0.5761 },
+                        { City: 'Downey',
+                            State: 'California',
+                            police_diversity_zscore: 0.7424,
+                            percent_under_first_quartile_zscore: -0.0438,
+                            minority_isolation_zscore: 1.894,
+                            youth_jobless_zscore: -0.4123,
+                            minority_percent_zscore: 1.2143,
+                            shootings_zscore: 1.0925 },
+                        { City: 'El Paso',
+                            State: 'Texas',
+                            police_diversity_zscore: 1.5469,
+                            percent_under_first_quartile_zscore: 0.3099,
+                            minority_isolation_zscore: -0.587,
+                            youth_jobless_zscore: -0.556,
+                            minority_percent_zscore: 1.5086,
+                            shootings_zscore: 4.4278 },
+                        { City: 'Elizabeth',
+                            State: 'New Jersey',
+                            police_diversity_zscore: 0.2745,
+                            percent_under_first_quartile_zscore: 0.1205,
+                            minority_isolation_zscore: 2.2003,
+                            youth_jobless_zscore: -0.614,
+                            minority_percent_zscore: 1.5194,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Elk Grove',
+                            State: 'California',
+                            police_diversity_zscore: -0.2359,
+                            percent_under_first_quartile_zscore: -0.2743,
+                            minority_isolation_zscore: -0.32,
+                            youth_jobless_zscore: 0.2366,
+                            minority_percent_zscore: -0.9914,
+                            shootings_zscore: 0.6951 },
+                        { City: 'Erie',
+                            State: 'Pennsylvania',
+                            police_diversity_zscore: -1.5888,
+                            percent_under_first_quartile_zscore: -1.2521,
+                            minority_isolation_zscore: -0.3933,
+                            youth_jobless_zscore: -1.1967,
+                            minority_percent_zscore: -1.0645,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Flint',
+                            State: 'Michigan',
+                            police_diversity_zscore: 1.0528,
+                            percent_under_first_quartile_zscore: 1.242,
+                            minority_isolation_zscore: 1.0144,
+                            youth_jobless_zscore: 2.3425,
+                            minority_percent_zscore: 0.3379,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Glendale',
+                            State: 'Arizona',
+                            police_diversity_zscore: -0.5876,
+                            percent_under_first_quartile_zscore: 0.9452,
+                            minority_isolation_zscore: -0.8568,
+                            youth_jobless_zscore: -0.7367,
+                            minority_percent_zscore: -0.2868,
+                            shootings_zscore: 0.6836 },
+                        { City: 'Grand Rapids',
+                            State: 'Michigan',
+                            police_diversity_zscore: -1.0284,
+                            percent_under_first_quartile_zscore: -1.7785,
+                            minority_isolation_zscore: 0.0084,
+                            youth_jobless_zscore: 1.2021,
+                            minority_percent_zscore: -0.6643,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Green Bay',
+                            State: 'Wisconsin',
+                            police_diversity_zscore: -1.5584,
+                            percent_under_first_quartile_zscore: -1.4731,
+                            minority_isolation_zscore: -0.5984,
+                            youth_jobless_zscore: -0.0231,
+                            minority_percent_zscore: -1.2689,
+                            shootings_zscore: 0.2819 },
+                        { City: 'Hampton',
+                            State: 'Virginia',
+                            police_diversity_zscore: 0.1306,
+                            percent_under_first_quartile_zscore: 0.1651,
+                            minority_isolation_zscore: 0.9954,
+                            youth_jobless_zscore: -1.1045,
+                            minority_percent_zscore: 0.319,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Hartford',
+                            State: 'Connecticut',
+                            police_diversity_zscore: 0.1769,
+                            percent_under_first_quartile_zscore: 0.5877,
+                            minority_isolation_zscore: 1.9078,
+                            youth_jobless_zscore: 0.861,
+                            minority_percent_zscore: 1.228,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Huntington Beach',
+                            State: 'California',
+                            police_diversity_zscore: 0.6024,
+                            percent_under_first_quartile_zscore: -0.8446,
+                            minority_isolation_zscore: -0.547,
+                            youth_jobless_zscore: -0.1632,
+                            minority_percent_zscore: -1.2176,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Indianapolis',
+                            State: 'Indiana',
+                            police_diversity_zscore: -0.7886,
+                            percent_under_first_quartile_zscore: -0.5162,
+                            minority_isolation_zscore: -1.0781,
+                            youth_jobless_zscore: -0.5939,
+                            minority_percent_zscore: -0.4939,
+                            shootings_zscore: 0.7782 },
+                        { City: 'Inglewood',
+                            State: 'California',
+                            police_diversity_zscore: 1.1204,
+                            percent_under_first_quartile_zscore: 0.2697,
+                            minority_isolation_zscore: 2.5191,
+                            youth_jobless_zscore: -0.7912,
+                            minority_percent_zscore: 1.8371,
+                            shootings_zscore: 1.4198 },
+                        { City: 'Jacksonville',
+                            State: 'Florida',
+                            police_diversity_zscore: -0.3784,
+                            percent_under_first_quartile_zscore: 0.1002,
+                            minority_isolation_zscore: -1.0266,
+                            youth_jobless_zscore: 0.1742,
+                            minority_percent_zscore: -0.4118,
+                            shootings_zscore: -0.0753 },
+                        { City: 'Jersey City',
+                            State: 'New Jersey',
+                            police_diversity_zscore: 0.1934,
+                            percent_under_first_quartile_zscore: -0.4382,
+                            minority_isolation_zscore: -0.0909,
+                            youth_jobless_zscore: -0.2505,
+                            minority_percent_zscore: 0.1159,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Kansas City',
+                            State: 'Kansas',
+                            police_diversity_zscore: 1.6276,
+                            percent_under_first_quartile_zscore: 0.1649,
+                            minority_isolation_zscore: 0.678,
+                            youth_jobless_zscore: -0.2936,
+                            minority_percent_zscore: 0.0028,
+                            shootings_zscore: 3.8603 },
+                        { City: 'Laredo',
+                            State: 'Texas',
+                            police_diversity_zscore: 1.6263,
+                            percent_under_first_quartile_zscore: 2.1631,
+                            minority_isolation_zscore: 0.6778,
+                            youth_jobless_zscore: 0.8686,
+                            minority_percent_zscore: 1.9841,
+                            shootings_zscore: -0.367 },
+                        { City: 'Lawton',
+                            State: 'Oklahoma',
+                            police_diversity_zscore: 1.6276,
+                            percent_under_first_quartile_zscore: -0.7203,
+                            minority_isolation_zscore: 0.132,
+                            youth_jobless_zscore: -0.6311,
+                            minority_percent_zscore: -0.5411,
+                            shootings_zscore: 0.3676 },
+                        { City: 'Lewisville',
+                            State: 'Texas',
+                            police_diversity_zscore: -0.7025,
+                            percent_under_first_quartile_zscore: -2.7144,
+                            minority_isolation_zscore: 0.3814,
+                            youth_jobless_zscore: -1.3782,
+                            minority_percent_zscore: -0.2927,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Lincoln',
+                            State: 'Nebraska',
+                            police_diversity_zscore: -1.443,
+                            percent_under_first_quartile_zscore: -1.4544,
+                            minority_isolation_zscore: -1.0772,
+                            youth_jobless_zscore: -1.1014,
+                            minority_percent_zscore: -1.5786,
+                            shootings_zscore: 0.9706 },
+                        { City: 'Little Rock',
+                            State: 'Arkansas',
+                            police_diversity_zscore: 0.0008,
+                            percent_under_first_quartile_zscore: 0.397,
+                            minority_isolation_zscore: 0.757,
+                            youth_jobless_zscore: 1.1178,
+                            minority_percent_zscore: 0.0815,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Long Beach',
+                            State: 'California',
+                            police_diversity_zscore: 0.6348,
+                            percent_under_first_quartile_zscore: 0.5217,
+                            minority_isolation_zscore: -0.6899,
+                            youth_jobless_zscore: 0.2238,
+                            minority_percent_zscore: 0.2354,
+                            shootings_zscore: 0.9055 },
+                        { City: 'Los Angeles',
+                            State: 'California',
+                            police_diversity_zscore: 1.1945,
+                            percent_under_first_quartile_zscore: 0.5002,
+                            minority_isolation_zscore: -1.1933,
+                            youth_jobless_zscore: -0.6481,
+                            minority_percent_zscore: 0.4105,
+                            shootings_zscore: -0.3376 },
+                        { City: 'Lowell',
+                            State: 'Massachusetts',
+                            police_diversity_zscore: -0.6271,
+                            percent_under_first_quartile_zscore: -1.6827,
+                            minority_isolation_zscore: -0.1647,
+                            youth_jobless_zscore: 0.7729,
+                            minority_percent_zscore: -0.8367,
+                            shootings_zscore: 0.0584 },
+                        { City: 'Manchester',
+                            State: 'New Hampshire',
+                            police_diversity_zscore: -1.5448,
+                            percent_under_first_quartile_zscore: -0.1968,
+                            minority_isolation_zscore: -0.7251,
+                            youth_jobless_zscore: -1.7642,
+                            minority_percent_zscore: -1.395,
+                            shootings_zscore: -0.8061 },
+                        { City: 'McAllen',
+                            State: 'Texas',
+                            police_diversity_zscore: 1.6222,
+                            percent_under_first_quartile_zscore: 1.2153,
+                            minority_isolation_zscore: 2.2745,
+                            youth_jobless_zscore: 0.8935,
+                            minority_percent_zscore: 1.5934,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Mesa',
+                            State: 'Arizona',
+                            police_diversity_zscore: -0.5896,
+                            percent_under_first_quartile_zscore: -0.0819,
+                            minority_isolation_zscore: -0.9582,
+                            youth_jobless_zscore: -0.4673,
+                            minority_percent_zscore: -0.6401,
+                            shootings_zscore: 0.7148 },
+                        { City: 'Miami',
+                            State: 'Florida',
+                            police_diversity_zscore: 1.5895,
+                            percent_under_first_quartile_zscore: 0.5702,
+                            minority_isolation_zscore: 0.023,
+                            youth_jobless_zscore: -0.4728,
+                            minority_percent_zscore: 1.7653,
+                            shootings_zscore: 1.4392 },
+                        { City: 'Milwaukee',
+                            State: 'Wisconsin',
+                            police_diversity_zscore: 0.2546,
+                            percent_under_first_quartile_zscore: -0.1746,
+                            minority_isolation_zscore: -0.5165,
+                            youth_jobless_zscore: 0.6075,
+                            minority_percent_zscore: 0.4067,
+                            shootings_zscore: -0.4684 },
+                        { City: 'Minneapolis',
+                            State: 'Minnesota',
+                            police_diversity_zscore: -1.3172,
+                            percent_under_first_quartile_zscore: -1.0259,
+                            minority_isolation_zscore: -0.9485,
+                            youth_jobless_zscore: -0.2257,
+                            minority_percent_zscore: -0.9322,
+                            shootings_zscore: 0.3501 },
+                        { City: 'New Haven',
+                            State: 'Connecticut',
+                            police_diversity_zscore: 0.6786,
+                            percent_under_first_quartile_zscore: -0.8336,
+                            minority_isolation_zscore: 1.1034,
+                            youth_jobless_zscore: -0.0628,
+                            minority_percent_zscore: 0.4266,
+                            shootings_zscore: -0.8061 },
+                        { City: 'New Orleans',
+                            State: 'Louisiana',
+                            police_diversity_zscore: 1.1129,
+                            percent_under_first_quartile_zscore: 1.2962,
+                            minority_isolation_zscore: -0.3573,
+                            youth_jobless_zscore: 0.16,
+                            minority_percent_zscore: 0.6167,
+                            shootings_zscore: 0.1154 },
+                        { City: 'New York',
+                            State: 'New York',
+                            police_diversity_zscore: 0.6821,
+                            percent_under_first_quartile_zscore: 0.1715,
+                            minority_isolation_zscore: -1.2543,
+                            youth_jobless_zscore: 0.0721,
+                            minority_percent_zscore: 0.219,
+                            shootings_zscore: -0.7723 },
+                        { City: 'Newark',
+                            State: 'New Jersey',
+                            police_diversity_zscore: 0.4586,
+                            percent_under_first_quartile_zscore: 0.8693,
+                            minority_isolation_zscore: 1.0038,
+                            youth_jobless_zscore: 0.5756,
+                            minority_percent_zscore: 1.512,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Newport News',
+                            State: 'Virginia',
+                            police_diversity_zscore: -0.3841,
+                            percent_under_first_quartile_zscore: -0.4058,
+                            minority_isolation_zscore: 0.7074,
+                            youth_jobless_zscore: -1.0026,
+                            minority_percent_zscore: 0.0321,
+                            shootings_zscore: -0.3267 },
+                        { City: 'Oakland',
+                            State: 'California',
+                            police_diversity_zscore: 0.2136,
+                            percent_under_first_quartile_zscore: -0.6822,
+                            minority_isolation_zscore: -0.5088,
+                            youth_jobless_zscore: 0.802,
+                            minority_percent_zscore: 0.0008,
+                            shootings_zscore: 0.4778 },
+                        { City: 'Ontario',
+                            State: 'California',
+                            police_diversity_zscore: 0.2152,
+                            percent_under_first_quartile_zscore: 1.461,
+                            minority_isolation_zscore: 1.8091,
+                            youth_jobless_zscore: -0.4381,
+                            minority_percent_zscore: 1.1297,
+                            shootings_zscore: 1.776 },
+                        { City: 'Pasadena',
+                            State: 'California',
+                            police_diversity_zscore: 1.1071,
+                            percent_under_first_quartile_zscore: -0.9447,
+                            minority_isolation_zscore: 0.4716,
+                            youth_jobless_zscore: -1.0518,
+                            minority_percent_zscore: -0.2029,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Paterson',
+                            State: 'New Jersey',
+                            police_diversity_zscore: 0.9728,
+                            percent_under_first_quartile_zscore: 1.0493,
+                            minority_isolation_zscore: 2.5025,
+                            youth_jobless_zscore: 0.4557,
+                            minority_percent_zscore: 1.8205,
+                            shootings_zscore: -0.2755 },
+                        { City: 'Philadelphia',
+                            State: 'Pennsylvania',
+                            police_diversity_zscore: 0.511,
+                            percent_under_first_quartile_zscore: 0.0536,
+                            minority_isolation_zscore: -1.005,
+                            youth_jobless_zscore: 1.3065,
+                            minority_percent_zscore: 0.2843,
+                            shootings_zscore: -0.7169 },
+                        { City: 'Phoenix',
+                            State: 'Arizona',
+                            police_diversity_zscore: -0.4067,
+                            percent_under_first_quartile_zscore: 0.8628,
+                            minority_isolation_zscore: -1.1173,
+                            youth_jobless_zscore: 0.2507,
+                            minority_percent_zscore: 0.0137,
+                            shootings_zscore: 0.3747 },
+                        { City: 'Pittsburgh',
+                            State: 'Pennsylvania',
+                            police_diversity_zscore: -0.9871,
+                            percent_under_first_quartile_zscore: -0.7223,
+                            minority_isolation_zscore: -0.6806,
+                            youth_jobless_zscore: 0.1403,
+                            minority_percent_zscore: -0.9739,
+                            shootings_zscore: 0.4433 },
+                        { City: 'Pomona',
+                            State: 'California',
+                            police_diversity_zscore: 0.7129,
+                            percent_under_first_quartile_zscore: 2.1688,
+                            minority_isolation_zscore: 1.8625,
+                            youth_jobless_zscore: 0.4245,
+                            minority_percent_zscore: 1.1829,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Portland',
+                            State: 'Oregon',
+                            police_diversity_zscore: -0.9017,
+                            percent_under_first_quartile_zscore: -0.4532,
+                            minority_isolation_zscore: -1.1781,
+                            youth_jobless_zscore: -1.1732,
+                            minority_percent_zscore: -1.3803,
+                            shootings_zscore: -0.1958 },
+                        { City: 'Providence',
+                            State: 'Rhode Island',
+                            police_diversity_zscore: -0.5289,
+                            percent_under_first_quartile_zscore: 0.5916,
+                            minority_isolation_zscore: 1.027,
+                            youth_jobless_zscore: 1.0784,
+                            minority_percent_zscore: 0.3506,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Provo',
+                            State: 'Utah',
+                            police_diversity_zscore: -1.5425,
+                            percent_under_first_quartile_zscore: -0.1878,
+                            minority_isolation_zscore: -0.71,
+                            youth_jobless_zscore: 1.0003,
+                            minority_percent_zscore: -1.3801,
+                            shootings_zscore: 1.1113 },
+                        { City: 'Richmond',
+                            State: 'Virginia',
+                            police_diversity_zscore: 0.2019,
+                            percent_under_first_quartile_zscore: 0.5486,
+                            minority_isolation_zscore: 0.8653,
+                            youth_jobless_zscore: 0.4066,
+                            minority_percent_zscore: 0.1894,
+                            shootings_zscore: -0.2636 },
+                        { City: 'Rochester',
+                            State: 'New York',
+                            police_diversity_zscore: -0.3063,
+                            percent_under_first_quartile_zscore: -0.7718,
+                            minority_isolation_zscore: -0.1344,
+                            youth_jobless_zscore: 2.0484,
+                            minority_percent_zscore: 0.3043,
+                            shootings_zscore: -0.544 },
+                        { City: 'Roseville',
+                            State: 'California',
+                            police_diversity_zscore: 1.6276,
+                            percent_under_first_quartile_zscore: -0.6724,
+                            minority_isolation_zscore: -0.6987,
+                            youth_jobless_zscore: -3.6334,
+                            minority_percent_zscore: -1.3688,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Saint Louis',
+                            State: 'Missouri',
+                            police_diversity_zscore: -1.0255,
+                            percent_under_first_quartile_zscore: -0.5882,
+                            minority_isolation_zscore: -0.2307,
+                            youth_jobless_zscore: 0.3794,
+                            minority_percent_zscore: 0.012,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Saint Paul',
+                            State: 'Minnesota',
+                            police_diversity_zscore: -0.7127,
+                            percent_under_first_quartile_zscore: -1.0847,
+                            minority_isolation_zscore: -0.7761,
+                            youth_jobless_zscore: -0.1603,
+                            minority_percent_zscore: -0.9472,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Salinas',
+                            State: 'California',
+                            police_diversity_zscore: 0.386,
+                            percent_under_first_quartile_zscore: 0.0637,
+                            minority_isolation_zscore: 1.772,
+                            youth_jobless_zscore: -0.2456,
+                            minority_percent_zscore: 1.0927,
+                            shootings_zscore: -0.8061 },
+                        { City: 'San Francisco',
+                            State: 'California',
+                            police_diversity_zscore: 0.678,
+                            percent_under_first_quartile_zscore: -2.2009,
+                            minority_isolation_zscore: -1.1728,
+                            youth_jobless_zscore: -1.878,
+                            minority_percent_zscore: -1.1352,
+                            shootings_zscore: -0.0882 },
+                        { City: 'Santa Ana',
+                            State: 'California',
+                            police_diversity_zscore: 0.8929,
+                            percent_under_first_quartile_zscore: 1.6745,
+                            minority_isolation_zscore: 0.3379,
+                            youth_jobless_zscore: -0.9014,
+                            minority_percent_zscore: 1.3087,
+                            shootings_zscore: 1.5773 },
+                        { City: 'Seattle',
+                            State: 'Washington',
+                            police_diversity_zscore: -0.3409,
+                            percent_under_first_quartile_zscore: -0.4061,
+                            minority_isolation_zscore: -1.1974,
+                            youth_jobless_zscore: 0.0104,
+                            minority_percent_zscore: -1.4665,
+                            shootings_zscore: -0.354 },
+                        { City: 'Sioux Falls',
+                            State: 'South Dakota',
+                            police_diversity_zscore: -1.4525,
+                            percent_under_first_quartile_zscore: -1.0816,
+                            minority_isolation_zscore: -0.957,
+                            youth_jobless_zscore: -2.2861,
+                            minority_percent_zscore: -1.6261,
+                            shootings_zscore: 0.0286 },
+                        { City: 'Springfield',
+                            State: 'Massachusetts',
+                            police_diversity_zscore: 0.2293,
+                            percent_under_first_quartile_zscore: 0.0484,
+                            minority_isolation_zscore: 1.2116,
+                            youth_jobless_zscore: 1.4695,
+                            minority_percent_zscore: 0.5344,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Sterling Heights',
+                            State: 'Michigan',
+                            police_diversity_zscore: -1.7754,
+                            percent_under_first_quartile_zscore: -1.3493,
+                            minority_isolation_zscore: -0.9641,
+                            youth_jobless_zscore: -1.2596,
+                            minority_percent_zscore: -1.6332,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Syracuse',
+                            State: 'New York',
+                            police_diversity_zscore: -1.5682,
+                            percent_under_first_quartile_zscore: 1.9373,
+                            minority_isolation_zscore: 0.1957,
+                            youth_jobless_zscore: 1.2197,
+                            minority_percent_zscore: -0.4777,
+                            shootings_zscore: 0.1205 },
+                        { City: 'Toledo',
+                            State: 'Ohio',
+                            police_diversity_zscore: -0.042,
+                            percent_under_first_quartile_zscore: -0.4216,
+                            minority_isolation_zscore: -0.4821,
+                            youth_jobless_zscore: 0.1211,
+                            minority_percent_zscore: -0.5478,
+                            shootings_zscore: -0.0091 },
+                        { City: 'Virginia Beach',
+                            State: 'Virginia',
+                            police_diversity_zscore: -0.8354,
+                            percent_under_first_quartile_zscore: -0.7132,
+                            minority_isolation_zscore: -0.9279,
+                            youth_jobless_zscore: -1.8235,
+                            minority_percent_zscore: -0.8715,
+                            shootings_zscore: -0.3031 },
+                        { City: 'Visalia',
+                            State: 'California',
+                            police_diversity_zscore: 0.6716,
+                            percent_under_first_quartile_zscore: 1.4362,
+                            minority_isolation_zscore: 0.8143,
+                            youth_jobless_zscore: 0.2634,
+                            minority_percent_zscore: 0.1386,
+                            shootings_zscore: -0.0406 },
+                        { City: 'Warren',
+                            State: 'Michigan',
+                            police_diversity_zscore: -1.6888,
+                            percent_under_first_quartile_zscore: -1.0944,
+                            minority_isolation_zscore: -0.4836,
+                            youth_jobless_zscore: 0.6753,
+                            minority_percent_zscore: -1.1544,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Waterbury',
+                            State: 'Connecticut',
+                            police_diversity_zscore: -0.5967,
+                            percent_under_first_quartile_zscore: 0.7088,
+                            minority_isolation_zscore: 1.1083,
+                            youth_jobless_zscore: 0.3666,
+                            minority_percent_zscore: 0.4316,
+                            shootings_zscore: -0.8061 },
+                        { City: 'Yonkers',
+                            State: 'New York',
+                            police_diversity_zscore: -0.7543,
+                            percent_under_first_quartile_zscore: 0.8532,
+                            minority_isolation_zscore: 0.7654,
+                            youth_jobless_zscore: 0.7083,
+                            minority_percent_zscore: 0.0899,
+                            shootings_zscore: -0.4937 } ];
+
+            var sorting_method = 'score';
+
+            function calculate_scores(){
+                // First, we have to get the weight scores from the sliders,
+                var grey_scores = true;
+                for (var key in keys){
+                    // I hope you brought a keyring for this crazziness.
+                    var key_slider = document.getElementById(key);
+                    console.log(typeof(key_slider.value));
+
+                    keys[key].weight = parseFloat(key_slider.value);
+                    if (!grey_scores || keys[key].weight > 0){
+                        grey_scores = false;
+                    }
+                }
+
+                // Then, we're going to go through all of the cities and run our fun calculation algo on each
+                for (var c = 0; c < census.length; c++){
+                    var result = 0;
+
+                    for (var key in keys){
+                        result += census[c][key] * keys[key].weight * (key === 'police_diversity_zscore' ? -1: 1);
+                    }
+
+                    census[c].score = result;
+                }
+                resort_results(true, grey_scores);
+            }
+
+            function resort_results(inplace, grey_scores){
+                /*Re-sort the results section of the GUI while taking into consideration whether we want the variables
+                    to remain 'inplace' or not flip the sorting upside-down or whether we should grey out scores because
+                    the silly user decided to weigh nothing as important
+                 */
+                // I swear to God, I don't know why this works, but it does. Don't touch it!! (You've been warned)
+                while (results.childNodes.length > 1){
+                    results.lastChild.remove();
+                }
+
+                // Now, we sort (After creating ranking scores out of the data scores)
+                census = census.sort(function(x, y){
+                    var x = parseFloat(x.score);
+                    var y = parseFloat(y.score);
+                    // This is technically backwards, but... it works for us. ;)
+                    var result = 0;
+                    if ( x > y ){
+                        result = -1;
+                    } else if ( x < y ){
+                        result = 1;
+                    }
+                    return result;
+                });
+
+                // Finally, display the data!
+                for (var i = 0; i < census.length; i++){
+                    var city_row = document.createElement('tr');
+
+                    var city = document.createElement('td');
+                    city.textContent = census[i].City;
+                    city_row.appendChild(city);
+
+                    var state = document.createElement('td');
+                    state.textContent = census[i].State;
+                    city_row.appendChild(state);
+
+                    var score = document.createElement('td');
+                    score.textContent = i + 1;
+                    score.style.color = (grey_scores ? 'gray': 'black');
+                    city_row.appendChild(score);
+
+                    results.appendChild(city_row);
+                }
+            }
+
+            // First, we're going to create a table that's going to contain everything in the risk assessment: menu AND output
+            var risk_assessment_container = document.createElement('table');
+
+            // we'll create both sides of the console: the commands on the left, and the output on the right
+            // We'll do this by first creating the controls and then the output
+
+            // Controls:
+            var controls_container = document.createElement('td');
+            var controls_table = document.createElement('table');
+            controls_table.style.width = "100%";
+            controls_table.style.fontSize = '20px';
+            controls_table.style.paddingBottom = '50px';
+
+            for (var each in keys){
+                var curr_row = document.createElement('tr');
+
+                // TODO: Space these things out a bit more. They're pretty cramped.
+
+                // After that, we add the control name to the row
+                var control = document.createElement('td');
+
+                var control_name = document.createElement('a');
+                control_name.textContent = keys[each].name;
+                control_name.title = keys[each].description;
+                control_name.addEventListener('click', function(obj){
+                    var slider_id = '';
+                    for(var each in keys){
+                        if (keys[each].name === obj.target.innerText){
+                            slider_id = each;
+                        }
+                    }
+                    var control_slider = document.getElementById(slider_id);
+                    if (control_slider.value > 0){
+                        control_slider.value = 0;
+                    } else {
+                        control_slider.value = 1;
+                    }
+                    calculate_scores();
+                });
+
+                control.appendChild(control_name);
+                curr_row.appendChild(control);
+
+                // Then the slider object:
+                var slider = document.createElement('input');
+                slider.id = each;
+                slider.type = 'range';
+                slider.min = 0;
+                slider.max = 1;
+                slider.value = 0;
+                slider.step = 0.05;
+                slider.addEventListener('change', calculate_scores);
+                curr_row.appendChild(slider);
+
+                controls_table.appendChild(curr_row);
+            }
+
+            controls_container.appendChild(controls_table);
+            risk_assessment_container.appendChild(controls_container);
+
+            // Output:
+
+            var result_container = document.createElement('td');
+            var results = document.createElement('table');
+            results.style.width = "100%";
+            results.style.fontSize = '20px';
+
+            var results_key = ['City', 'State', 'Score'];
+            var key_row = document.createElement('tr');
+            for (var k = 0; k < results_key.length; k++){
+                var key_column = document.createElement('td');
+                // TODO: Make these a tags with descriptions (maybe) and also onclicks for sorting
+                key_column.textContent = results_key[k];
+                key_column.style.fontSize = '30px';
+                key_column.style.fontWeight = 'bold';
+                key_row.appendChild(key_column);
+            }
+            results.appendChild(key_row);
+
+            result_container.appendChild(results);
+            //result_container.style.textAlign = 'center';
+            risk_assessment_container.appendChild(result_container);
+            risk_assessment_container.style.width = "100%";
+
+            document.body.appendChild(risk_assessment_container);
+            calculate_scores();
+        </script>
+    </body>
+</html>
+
+
